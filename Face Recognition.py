@@ -4,12 +4,10 @@ import sqlite3
 import numpy as np
 from PIL import Image
 from flask import Flask
-import mysql.connector
-#import time
+
 
 
 app = Flask(__name__)
-
 
 
 def insertOrUpdate(Id,Name):
@@ -46,7 +44,7 @@ def dataset():
             cv2.waitKey(100)
         cv2.imshow("Face",img)
         cv2.waitKey(1)
-        if(p>40):
+        if(p>20):
             break
     cam.release()
     cv2.destroyAllWindows()
@@ -72,11 +70,15 @@ def detect():
     rec.load("recognizer/trainningData.yml")
     id=0
     font=cv2.cv.InitFont(cv2.cv.CV_FONT_HERSHEY_COMPLEX_SMALL,5,1,0,4)
-    #time.sleep(2)
-    #ret, img = cam.read()
-    #cap=cam.isOpened()
+    #time.sleep(1)
+    ret, img = cam.read()
+    #Checking if cam is opened
+    cap=cam.isOpened()
+    #print cap,ret
+    if(not ret):
+        return 'camera not initialised'
     while(True):
-        ret,img=cam.read();        
+        ret,img=cam.read();
         grey=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
         faces=faceDetect.detectMultiScale(grey,1.3,5);
         for(x,y,w,h) in faces:
@@ -86,19 +88,11 @@ def detect():
             if(profile!=None):
                 cv2.cv.PutText(cv2.cv.fromarray(img),str(profile[1]),(x,y+h),font,255)
         cv2.imshow("Face",img)
-        num=id
-        con=mysql.connector.connect(host="localhost",database="softwarepuzzle",user="root",password="password")
-        cur=con.cursor()
-        cur.execute("select username from registration where accno="+str(num)+";")
-        #print(cur.fetchall())
-        data=cur.fetchone()
-        #print(data[0])
         if(cv2.waitKey(1)==ord('q')):
             break;
     cam.release()
-    con.close()
     cv2.destroyAllWindows()
-    return 'Done Detecting !!'+str(data[0])
+    return 'Done Detecting !!'
 
 def getImagesWithID(path):
     imagePaths=[os.path.join(path,f) for f in os.listdir(path)]
